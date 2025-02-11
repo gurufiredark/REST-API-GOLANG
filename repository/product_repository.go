@@ -83,3 +83,59 @@ func (pr *ProductRepository) GetProductById(id_product int) (*model.Product, err
 
 	return &produto, nil
 }
+
+func (pr *ProductRepository) UpdateProduct(product model.Product) error {
+	fmt.Println("Attempting to update product:", product) // Log para debug
+
+	query, err := pr.connection.Prepare("UPDATE product SET product_name = $1, price = $2 WHERE id = $3")
+	if err != nil {
+		fmt.Println("Error preparing query:", err)
+		return err
+	}
+
+	result, err := query.Exec(product.Name, product.Price, product.ID)
+	if err != nil {
+		fmt.Println("Error executing query:", err)
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("no product found with id %d", product.ID)
+	}
+
+	query.Close()
+	return nil
+}
+
+func (pr *ProductRepository) DeleteProduct(id_product int) error {
+	fmt.Println("Attempting to delete product:", id_product)
+
+	query, err := pr.connection.Prepare("DELETE FROM product WHERE id = $1")
+	if err != nil {
+		fmt.Println("Error preparing query:", err)
+		return err
+	}
+
+	result, err := query.Exec(id_product)
+	if err != nil {
+		fmt.Println("Error executing query:", err)
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("no product found with id %d", id_product)
+	}
+
+	query.Close()
+	return nil
+}
